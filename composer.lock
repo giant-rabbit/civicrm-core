@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "daecbb5d76e762759e8f056601290200",
+    "hash": "24406386d20abb7248a505e7660adb62",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -993,6 +993,55 @@
             "time": "2014-02-11 10:29:24"
         },
         {
+            "name": "symfony/expression-language",
+            "version": "dev-master",
+            "target-dir": "Symfony/Component/ExpressionLanguage",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/expression-language.git",
+                "reference": "e07f5a45d5635ba7a1c506dc6d01da43d6c7eb7e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/expression-language/zipball/e07f5a45d5635ba7a1c506dc6d01da43d6c7eb7e",
+                "reference": "e07f5a45d5635ba7a1c506dc6d01da43d6c7eb7e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.5-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Symfony\\Component\\ExpressionLanguage\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "http://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony ExpressionLanguage Component",
+            "homepage": "http://symfony.com",
+            "time": "2014-04-16 10:36:21"
+        },
+        {
             "name": "symfony/http-foundation",
             "version": "2.3.x-dev",
             "target-dir": "Symfony/Component/HttpFoundation",
@@ -1092,6 +1141,71 @@
             "description": "Symfony Serializer Component",
             "homepage": "http://symfony.com",
             "time": "2014-03-26 07:21:50"
+        },
+        {
+            "name": "willdurand/hateoas",
+            "version": "v2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/willdurand/Hateoas.git",
+                "reference": "558028fe0a840d79a9e4d53c384f33758d0c5086"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/willdurand/Hateoas/zipball/558028fe0a840d79a9e4d53c384f33758d0c5086",
+                "reference": "558028fe0a840d79a9e4d53c384f33758d0c5086",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/annotations": "~1.0",
+                "doctrine/common": "~2.0",
+                "jms/metadata": "~1.1",
+                "jms/serializer": "~0.13@dev",
+                "symfony/expression-language": "~2.4"
+            },
+            "require-dev": {
+                "atoum/atoum": "dev-master",
+                "hautelook/frankenstein": "~0.1",
+                "pagerfanta/pagerfanta": "~1.0",
+                "phpunit/phpunit": "~3.7",
+                "symfony/dependency-injection": "~2.0",
+                "symfony/routing": "~2.0",
+                "symfony/yaml": "~2.0",
+                "twig/twig": "~1.12"
+            },
+            "suggest": {
+                "symfony/routing": "To use the SymfonyRouteFactory.",
+                "symfony/yaml": "To use yaml based configuration.",
+                "twig/twig": "To use the Twig extensions."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Hateoas": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Durand",
+                    "email": "william.durand1@gmail.com",
+                    "homepage": "http://www.willdurand.fr"
+                },
+                {
+                    "name": "Adrien Brault",
+                    "email": "adrien.brault@gmail.com"
+                }
+            ],
+            "description": "A PHP library to support implementing representations for HATEOAS REST web services",
+            "time": "2014-03-26 21:16:30"
         }
     ],
     "packages-dev": [

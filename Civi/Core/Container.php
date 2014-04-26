@@ -88,6 +88,12 @@ class Container {
       array(new Reference('annotation_reader'))
     ));
 
+    $container->setDefinition('hateoas', new Definition(
+      '\Hateoas\Hateoas',
+      array()
+    ))
+      ->setFactoryService(self::SELF)->setFactoryMethod('createHateoas');
+
     $container->setDefinition('dispatcher', new Definition(
       '\Symfony\Component\EventDispatcher\EventDispatcher',
       array()
@@ -160,6 +166,14 @@ class Container {
     $dbSettings = new \CRM_DB_Settings();
     $em = EntityManager::create($dbSettings->toDoctrineArray(), $config);
     return $em;
+  }
+
+  /**
+   * @return \Hateoas\Hateoas
+   */
+  public function createHateoas() {
+    $hateoas = new \Hateoas\HateoasBuilder();
+    return $hateoas->buildHateoas();
   }
 
   /**
