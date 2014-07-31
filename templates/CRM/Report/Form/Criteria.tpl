@@ -266,5 +266,3 @@
     });
     </script>
     {/literal}
-
-    <div>{$form.buttons.html}</div>

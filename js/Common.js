@@ -812,11 +812,29 @@ CRM.validate = CRM.validate || {
           $(this).next().css('display', 'block').slideUp(speed);
         }
         $(this).parent().toggleClass('collapsed');
-        return false;
+        e.preventDefault();
+      })
+      // Handle actions links show/hide
+      .on('click', function(e) {
+        if ($(e.target).is('.crm-actions-list-link, .crm-actions-list-link *')) {
+          $('.crm-actions-list').hide();
+          $(e.target).parents('.crm-actions-list-wrapper').children('.crm-actions-list').show();
+          e.preventDefault();
+        }
+        else {
+          $('.crm-actions-list').hide();
+        }
       });
-      container.addClass('crm-accordion-processed');
-    }
-  };
+    $().crmtooltip();
+  });
+  /**
+   * @deprecated
+   */
+  $.fn.crmAccordions = function () {};
+  /**
+   * Collapse or expand an accordion
+   * @param speed
+   */
   $.fn.crmAccordionToggle = function (speed) {
     $(this).each(function () {
       if ($(this).hasClass('collapsed')) {

@@ -24,62 +24,71 @@
  +--------------------------------------------------------------------+
 *}
 {if !$printOnly} {* NO print section starts *}
-
-    {* build the print pdf buttons *}
-    {if $rows}
-        <div class="crm-tasks">
-        {assign var=print value="_qf_"|cat:$form.formName|cat:"_submit_print"}
-        {assign var=pdf   value="_qf_"|cat:$form.formName|cat:"_submit_pdf"}
-        {assign var=csv   value="_qf_"|cat:$form.formName|cat:"_submit_csv"}
-        {assign var=group value="_qf_"|cat:$form.formName|cat:"_submit_group"}
-        {assign var=chart value="_qf_"|cat:$form.formName|cat:"_submit_chart"}
-        <table style="border:0;">
+  <div class="crm-tasks">
+    <table style="border:0;">
+      <tr>
+        <td>
+          <table class="form-layout-compressed">
             <tr>
-                <td>
-                    <table class="form-layout-compressed">
-                        <tr>
-                            <td>{$form.$print.html}&nbsp;&nbsp;</td>
-                            <td>{$form.$pdf.html}&nbsp;&nbsp;</td>
-                            <td>{$form.$csv.html}&nbsp;&nbsp;</td>
-                            {if $instanceUrl}
-                                <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
-                            {/if}
-                        </tr>
-                    </table>
+              {if $mode neq 'template'}
+                <td class="crm-actions-list-wrapper">
+                  <a class="crm-actions-list-link button" href="#"><span><div class="icon dropdown-icon"></div>Actions</span></a>
+                  <div class="crm-actions-list">
+                    <ul>
+                      {if $csvButton}
+                        <li>{$form.$csvButton.html}</li>
+                      {/if}
+                      <li>{$form.$pdfButton.html}</li>
+                      <li>{$form.$printButton.html}</li>
+                      {if $tabularButton}
+                        <li>{$form.$tabularButton.html}</li>
+                      {/if}
+                      {if $barChartButton AND $chartSupported}
+                        <li>{$form.$barChartButton.html}</li>
+                      {/if}
+                      {if $pieChartButton AND $chartSupported}
+                        <li>{$form.$pieChartButton.html}</li>
+                      {/if}
+                      {if $settingsUrl}
+                        <li><a href="{$settingsUrl}">Edit report settings</a></li>
+                      {/if}
+                    </ul>
+                  </div>
                 </td>
-                <td>
-                    <table class="form-layout-compressed" align="right">
-                        {if $chartSupported}
-                            <tr>
-                                <td>{$form.charts.html|crmAddClass:big}</td>
-                                <td align="right">{$form.$chart.html}</td>
-                            </tr>
-                        {/if}
-                        {if $form.groups}
-                            <tr>
-                                <td>{$form.groups.html|crmAddClass:big}</td>
-                                <td align="right">{$form.$group.html}</td>
-                            </tr>
-                        {/if}
-                    </table>
-                </td>
+                <td class='save'>{$form.$saveButton.html}&nbsp;&nbsp;</td>
+                <td>{$form.$copyButton.html}&nbsp;&nbsp;</td>
+              {/if}
+              <td>{$form.$viewButton.html}&nbsp;&nbsp;</td>
+              {if $mode eq 'template'}
+                <td>{$form.$createButton.html}&nbsp;&nbsp;</td>
+              {/if}
+              {if $instanceUrl}
+                <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
+              {/if}
             </tr>
         </table>
-        </div>
-    {/if}
-
-    {literal}
-    <script type="text/javascript">
-    var flashChartType = {/literal}{if $chartType}'{$chartType}'{else}''{/if}{literal};
-    function disablePrintPDFButtons( viewtype ) {
-      if (viewtype && flashChartType != viewtype) {
-        cj('#_qf_Summary_submit_pdf').attr('disabled', true).addClass('button-disabled');
-  cj('#_qf_Summary_submit_print').attr('disabled', true).addClass('button-disabled');
-      } else {
-        cj('#_qf_Summary_submit_pdf').removeAttr('disabled').removeClass('button-disabled');
-  cj('#_qf_Summary_submit_print').removeAttr('disabled').removeClass('button-disabled');
-      }
-    }
-    </script>
-    {/literal}
+      </td>
+      <td>
+        <table class="form-layout-compressed" align="right">
+          {if $form.groups AND $groupButton AND $mode neq 'template'}
+            <tr>
+              <td>{$form.groups.html|crmAddClass:big}</td>
+              <td align="right">{$form.$groupButton.html}</td>
+            </tr>
+          {/if}
+        </table>
+      </td>
+    </tr>
+  </table>
+  {$form.charts.html}
+</div>
+{literal}
+  <script type="text/javascript" >
+  CRM.$(function($) {
+    $('.save input.crm-form-submit').click( function() {
+      return window.confirm('{/literal}{ts}Save will overwrite the default criteria for the "{/ts}{$reportTitle}{ts}" report. If you do not wish to do this, click "Cancel" and "Save a Copy" instead.{/ts}{literal}');
+    });
+  });
+  </script>
+{/literal}
 {/if} {* NO print section ends *}

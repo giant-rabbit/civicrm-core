@@ -167,9 +167,8 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
         $rows[$dao->compName][$dao->id]['label'] = $dao->label;
         $rows[$dao->compName][$dao->id]['description'] = $dao->description;
         $rows[$dao->compName][$dao->id]['url'] = CRM_Utils_System::url("{$url}/{$dao->id}", "reset=1");
-        if (CRM_Core_Permission::check('administer Reports')) {
-          $rows[$dao->compName][$dao->id]['deleteUrl'] = CRM_Utils_System::url("{$url}/{$dao->id}", 'action=delete&reset=1');
-        }
+        $rows[$dao->compName][$dao->id]['viewUrl'] = CRM_Utils_System::url("{$url}/{$dao->id}", 'output=view&reset=1');
+        $rows[$dao->compName][$dao->id]['actions'] = $this->getInstanceLinks($dao);
       }
     }
 
@@ -214,6 +213,35 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
       $this->assign('compName', $this->_compName);
     }
     return parent::run();
+  }
+
+  function getInstanceLinks($instance) {
+    $report_class = CRM_Report_Utils_Report::getInstanceClassFromReportId($instance->report_id);
+    $report = new $report_class();
+    $actions = $report->getInstanceActions($instance->id);
+    $main_actions = array(
+      'view',
+      'save',
+      'group',
+      'create',
+    );
+    $links = array();
+    foreach ($actions as $action => $label) {
+      if (!in_array($action, $main_actions)) {
+        $links[$action]['id'] = $action;
+        $links[$action]['label'] = $label;
+        if ($action == 'pieChart' || $action == 'barChart') {
+          $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}", "format={$action}&output=view&reset=1"); 
+        }
+        elseif ($action == 'tabular') {
+          $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}", "format=&output=view&reset=1");
+        }
+        else {
+          $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}", "output={$action}&reset=1");
+        }
+      }
+    }
+    return $links;
   }
 }
 

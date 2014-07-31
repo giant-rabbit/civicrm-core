@@ -48,6 +48,10 @@ class CRM_Report_Page_Instance extends CRM_Core_Page {
     if (!$instanceId) {
       $instanceId = CRM_Report_Utils_Report::getInstanceIDForPath();
     }
+    if (is_numeric($instanceId)) {
+      $instanceURL = CRM_Utils_System::url("civicrm/report/instance/{$instanceId}", 'reset=1');
+      CRM_Core_Session::singleton()->replaceUserContext($instanceURL);
+    }
     $action    = CRM_Utils_Request::retrieve('action', 'String', $this);
     $optionVal = CRM_Report_Utils_Report::getValueFromUrl($instanceId);
     $reportUrl = CRM_Utils_System::url('civicrm/report/list', "reset=1");
@@ -99,8 +103,14 @@ class CRM_Report_Page_Instance extends CRM_Core_Page {
           $this->assign('reportTitle', $templateInfo['label']);
         }
 
+        if (isset($this->urlPath[4]) && $this->urlPath[4] == 'settings') {
+          $formName = 'CRM_Report_Form_Instance';
+        }
+        else {
+          $formName = $templateInfo['name'];
+        }
         $wrapper = new CRM_Utils_Wrapper();
-        return $wrapper->run($templateInfo['name'], NULL, NULL);
+        return $wrapper->run($formName, NULL, NULL);
       }
 
       CRM_Core_Session::setStatus(ts('Could not find template for the instance.'), ts('Template Not Found'), 'error');

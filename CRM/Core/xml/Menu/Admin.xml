@@ -235,6 +235,11 @@
      <weight>100</weight>
   </item>
   <item>
+    <path>civicrm/admin/menu/rebuild_default_reports_menu</path>
+    <page_callback>CRM_Admin_Page_RebuildDefaultReportsMenu</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
      <path>civicrm/admin/options/wordreplacements</path>
      <title>Word Replacements</title>
      <desc>Word Replacements.</desc>

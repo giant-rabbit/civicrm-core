@@ -486,4 +486,9 @@ WHERE  report_id = %1";
     }
     return $instanceDetails[$reportUrl];
   }
+
+  static function getInstanceClassFromReportId($report_id) {
+    $template_info = CRM_Core_OptionGroup::getRowValues('report_template', $report_id, 'value');
+    return $template_info['name'];
+  }
 }

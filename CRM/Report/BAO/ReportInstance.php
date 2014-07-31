@@ -136,34 +136,10 @@ class CRM_Report_BAO_ReportInstance extends CRM_Report_DAO_ReportInstance {
    */
   static function &create(&$params) {
     if (isset($params['report_header'])) {
-      $params['header']    = CRM_Utils_Array::value('report_header',$params);
+      $params['header'] = CRM_Utils_Array::value('report_header',$params);
     }
     if (isset($params['report_footer'])) {
-      $params['footer']    = CRM_Utils_Array::value('report_footer',$params);
-    }
-
-    // build navigation parameters
-    if (CRM_Utils_Array::value('is_navigation', $params)) {
-      if (!array_key_exists('navigation', $params)) {
-        $params['navigation'] = array();
-      }
-      $navigationParams =& $params['navigation'];
-
-      $navigationParams['permission'] = array();
-      $navigationParams['label'] = $params['title'];
-      $navigationParams['name']  = $params['title'];
-
-      $navigationParams['current_parent_id'] = CRM_Utils_Array::value('parent_id', $navigationParams);
-      $navigationParams['parent_id'] = CRM_Utils_Array::value('parent_id', $params);
-      $navigationParams['is_active'] = 1;
-
-      if ($permission = CRM_Utils_Array::value('permission', $params)) {
-        $navigationParams['permission'][] = $permission;
-      }
-
-      // unset the navigation related elements, not used in report form values
-      unset($params['parent_id']);
-      unset($params['is_navigation']);
+      $params['footer'] = CRM_Utils_Array::value('report_footer',$params);
     }
 
     // add to dashboard
@@ -179,34 +155,40 @@ class CRM_Report_BAO_ReportInstance extends CRM_Report_DAO_ReportInstance {
     }
 
     $transaction = new CRM_Core_Transaction();
-
     $instance = self::add($params);
     if (is_a($instance, 'CRM_Core_Error')) {
       $transaction->rollback();
       return $instance;
     }
 
-    // add / update navigation as required
-    if (!empty($navigationParams)) {
-      if (!CRM_Utils_Array::value('id',$params) &&
-        !CRM_Utils_Array::value('instance_id',$params) &&
-        CRM_Utils_Array::value('id', $navigationParams)) {
-        unset($navigationParams['id']);
+    if (!empty($params['is_navigation'])) {
+      $navigationParams['id'] = NULL;
+      if (CRM_Utils_Array::value('navigation', $params)) {
+        $navigationParams['id'] = CRM_Utils_Array::value('id', $params['navigation']);
+      }
+      $navigationParams['is_navigation'] = $params['is_navigation'];
+      $navigationParams['parent_id'] = $params['parent_id'];
+      $navigationParams['label'] = $params['title'];
+      $navigationParams['name']  = $params['title'];
+      $navigationParams['is_active'] = 1;
+      $navigationParams['permission'] = array();
+      if ($permission = CRM_Utils_Array::value('permission', $params)) {
+        $navigationParams['permission'][] = $permission;
       }
       $navigationParams['url'] = "civicrm/report/instance/{$instance->id}&reset=1";
       $navigation = CRM_Core_BAO_Navigation::add($navigationParams);
-
-      if (CRM_Utils_Array::value('is_active', $navigationParams)) {
-        //set the navigation id in report instance table
-        CRM_Core_DAO::setFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', $navigation->id);
-      }
-      else {
-        // has been removed from the navigation bar
-        CRM_Core_DAO::setFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', 'NULL');
-      }
-      //reset navigation
-      CRM_Core_BAO_Navigation::resetNavigation();
+      // set the navigation id in report instance table
+      CRM_Core_DAO::setFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', $navigation->id);
     }
+    else {
+      // has been removed from the navigation bar
+      $existing_navigation_id = CRM_Core_DAO::getFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', 'id');
+      CRM_Core_DAO::setFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', 'NULL');
+      if ($existing_navigation_id) {
+        CRM_Core_BAO_Navigation::processDelete($existing_navigation_id);
+      }
+    }
+    CRM_Core_BAO_Navigation::resetNavigation();
 
     // add to dashlet
     if (!empty($dashletParams)) {
