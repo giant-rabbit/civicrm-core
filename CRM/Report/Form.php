@@ -171,22 +171,10 @@ class CRM_Report_Form extends CRM_Core_Form {
     '</td><td width="25%">', '</tr><tr><td>',
   );
 
-  protected $_force = 1;
-
   protected $_params = NULL;
   protected $_formValues = NULL;
   protected $_instanceValues = NULL;
-
-  protected $_instanceForm = FALSE;
   protected $_criteriaForm = FALSE;
-
-  protected $_instanceButtonName = NULL;
-  protected $_createNewButtonName = NULL;
-  protected $_printButtonName = NULL;
-  protected $_pdfButtonName = NULL;
-  protected $_csvButtonName = NULL;
-  protected $_groupButtonName = NULL;
-  protected $_chartButtonName = NULL;
   protected $_csvSupported = TRUE;
   protected $_add2groupSupported = TRUE;
   protected $_groups = NULL;
@@ -263,7 +251,9 @@ class CRM_Report_Form extends CRM_Core_Form {
    * outputmode e.g 'print', 'csv', 'pdf'
    * @var string
    */
-  protected $_outputMode;
+  public $_outputMode;
+  public $_format;
+  public $criteriaMightHaveChanged = FALSE;
 
   public $_having = NULL;
   public $_select = NULL;
@@ -345,27 +335,57 @@ class CRM_Report_Form extends CRM_Core_Form {
   }
 
   function preProcessCommon() {
-    $this->_force =
-      CRM_Utils_Request::retrieve(
-        'force',
-        'Boolean',
-        CRM_Core_DAO::$_nullObject
-      );
-
-    $this->_dashBoardRowCount =
-      CRM_Utils_Request::retrieve(
-        'rowCount',
-        'Integer',
-        CRM_Core_DAO::$_nullObject
-      );
-
+    $entryURL = $this->controller->_entryURL;
+    $entryURL = parse_url($entryURL);
+    $urlQuery = str_replace('&amp;', '&', $entryURL['query']);
+    parse_str($urlQuery, $urlParams);
+    if ($this->controller->getButtonName()) {
+      $this->criteriaMightHaveChanged = TRUE;
+    }
+    if (!$this->criteriaMightHaveChanged) {
+      // Handle legacy "force" parameter from custom reports.
+      if (isset($urlParams['force']) && $urlParams['force'] == 1) {
+        $this->_outputMode = 'view';
+      }
+      // Handle reports run from the dashboard.
+      if (isset($urlParams['section']) || (isset($urlParams['context']) && ($urlParams['context'] == 'dashlet' || $urlParams['context'] == 'dashletFullscreen'))) {
+        $this->_outputMode = 'view';
+      }
+      if (isset($urlParams['output'])) {
+        $this->_outputMode = $urlParams['output'];
+      }
+      if (isset($urlParams['format'])) {
+        $this->_format = $urlParams['format'];
+      }
+      else {
+        $this->_format = '';
+      }
+    }
+    else {
+      $buttonName = $this->controller->getButtonName();
+      $output = end(explode('_', $buttonName));
+      $this->_outputMode = $output;
+      $this->assign('outputMode', $output);
+      if ($output == 'pieChart' || $output == 'barChart') {
+        $this->_submitValues['charts'] = $output;
+        $this->_format = $output;
+      }
+      elseif ($output == 'tabular') {
+        $this->_submitValues['charts'] = '';
+        $this->_format = '';
+      }
+      else {
+        $this->_format = $this->_submitValues['charts'];
+      }
+    }
+    $this->_dashBoardRowCount = CRM_Utils_Request::retrieve('rowCount', 'Integer', CRM_Core_DAO::$_nullObject);
     $this->_section = CRM_Utils_Request::retrieve('section', 'Integer', CRM_Core_DAO::$_nullObject);
-
     $this->assign('section', $this->_section);
     CRM_Core_Region::instance('page-header')->add(array(
       'markup' => sprintf('<!-- Report class: [%s] -->', htmlentities(get_class($this))),
     ));
     if(!$this->noController) {
+      $this->assign('mode', 'template');
       $this->setID($this->get('instanceId'));
 
       if (!$this->_id) {
@@ -409,40 +429,7 @@ class CRM_Report_Form extends CRM_Core_Form {
         $this->_formValues = NULL;
       }
 
-      // lets always do a force if reset is found in the url.
-      if (!empty($_REQUEST['reset'])) {
-        $this->_force = 1;
-      }
-
-      // set the mode
       $this->assign('mode', 'instance');
-    }
-    elseif (!$this->noController) {
-      list($optionValueID, $optionValue) = CRM_Report_Utils_Report::getValueIDFromUrl();
-      $instanceCount = CRM_Report_Utils_Report::getInstanceCount($optionValue);
-      if (($instanceCount > 0) && $optionValueID) {
-        $this->assign('instanceUrl',
-          CRM_Utils_System::url('civicrm/report/list',
-            "reset=1&ovid=$optionValueID"
-          )
-        );
-      }
-      if ($optionValueID) {
-        $this->_description = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue', $optionValueID, 'description');
-      }
-
-      // set the mode
-      $this->assign('mode', 'template');
-    }
-
-    // lets display the Report Settings section
-    $this->_instanceForm = $this->_force || $this->_id || (!empty($_POST));
-
-    // Do not display Report Settings section if administer Reports permission is absent OR
-    // if report instance is reserved and administer reserved reports absent
-    if (!CRM_Core_Permission::check('administer Reports') ||
-      ($this->_instanceValues['is_reserved'] && !CRM_Core_Permission::check('administer reserved reports'))) {
-      $this->_instanceForm = FALSE;
     }
 
     $this->assign('criteriaForm', FALSE);
@@ -453,14 +440,6 @@ class CRM_Report_Form extends CRM_Core_Form {
         $this->_criteriaForm = TRUE;
       }
     }
-
-    $this->_instanceButtonName = $this->getButtonName('submit', 'save');
-    $this->_createNewButtonName = $this->getButtonName('submit', 'next');
-    $this->_printButtonName = $this->getButtonName('submit', 'print');
-    $this->_pdfButtonName = $this->getButtonName('submit', 'pdf');
-    $this->_csvButtonName = $this->getButtonName('submit', 'csv');
-    $this->_groupButtonName = $this->getButtonName('submit', 'group');
-    $this->_chartButtonName = $this->getButtonName('submit', 'chart');
   }
 
   function addBreadCrumb() {
@@ -616,19 +595,23 @@ class CRM_Report_Form extends CRM_Core_Form {
         $reportFields[$tableName] = $this->_columns[$tableName]['fields'];
       }
     }
-
-    if ($this->_force) {
+    if (!$this->criteriaMightHaveChanged) {
       $this->setDefaultValues(FALSE);
     }
-
     CRM_Report_Utils_Get::processFilter($this->_filters, $this->_defaults);
     CRM_Report_Utils_Get::processGroupBy($groupBys, $this->_defaults);
     CRM_Report_Utils_Get::processFields($reportFields, $this->_defaults);
     CRM_Report_Utils_Get::processChart($this->_defaults);
 
-    if ($this->_force) {
+    if (!$this->criteriaMightHaveChanged) {
       $this->_formValues = $this->_defaults;
-      $this->postProcess();
+      if ($this->_outputMode) {
+        $this->postProcess();
+      }
+      else {
+        $this->beginPostProcess();
+        $this->buildQuery();
+      }
     }
   }
 
@@ -639,7 +622,6 @@ class CRM_Report_Form extends CRM_Core_Form {
    */
   function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
-
     // FIXME: generalizing form field naming conventions would reduce
     // lots of lines below.
     foreach ($this->_columns as $tableName => $table) {
@@ -762,7 +744,9 @@ class CRM_Report_Form extends CRM_Core_Form {
       $this->_defaults = array_merge($this->_defaults, $this->_instanceValues);
     }
 
-    CRM_Report_Form_Instance::setDefaultValues($this, $this->_defaults);
+    if (isset($this->_format)) {
+      $this->_defaults['charts'] = $this->_format;
+    }
 
     return $this->_defaults;
   }
@@ -800,15 +784,6 @@ class CRM_Report_Form extends CRM_Core_Form {
    */
   function setID($instanceid) {
     $this->_id = $instanceid;
-  }
-
-  /**
-   * Setter for $_force
-   * @param $isForce
-   * @internal param bool $force
-*/
-  function setForce($isForce) {
-    $this->_force = $isForce;
   }
 
   /**
@@ -999,14 +974,6 @@ class CRM_Report_Form extends CRM_Core_Form {
     $this->assign('otherOptions', $this->_options);
   }
 
-  function addChartOptions() {
-    if (!empty($this->_charts)) {
-      $this->addElement('select', "charts", ts('Chart'), $this->_charts, array('onchange' => 'disablePrintPDFButtons(this.value);'));
-      $this->assign('charts', $this->_charts);
-      $this->addElement('submit', $this->_chartButtonName, ts('View'));
-    }
-  }
-
   function addGroupBys() {
     $options = $freqElements = array();
 
@@ -1077,71 +1044,75 @@ class CRM_Report_Form extends CRM_Core_Form {
     }
   }
 
-  function buildInstanceAndButtons() {
-    CRM_Report_Form_Instance::buildForm($this);
-
-    $label = $this->_id ? ts('Update Report') : ts('Create Report');
-
-    $this->addElement('submit', $this->_instanceButtonName, $label);
-    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
-    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
-
-    if ($this->_id) {
-      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
+  function buildButtons() {
+    $actions = $this->getInstanceActions($this->_id);
+    foreach ($actions as $id => $label) {
+      if ($id == 'settings') {
+        $settingsUrl = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}/settings", 'reset=1');
+        $this->assign('settingsUrl', $settingsUrl);
+      }
+      elseif ($id == 'group') {
+        $button_name = $this->getButtonName('submit', $id);
+        $this->addElement('submit', $button_name, '', array('style' => 'display: none;'));
+        $this->assign("{$id}Button", $button_name);
+      }
+      else {
+        $button_name = $this->getButtonName('submit', $id);
+        $this->addElement('submit', $button_name, ts($label));
+        $this->assign("{$id}Button", $button_name);
+      }
     }
-    if ($this->_instanceForm) {
-      $this->assign('instanceForm', TRUE);
-    }
-
-    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
-    $this->addElement('submit', $this->_printButtonName, $label);
-
-    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
-    $this->addElement('submit', $this->_pdfButtonName, $label);
-
-    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
-
-    if ($this->_csvSupported) {
-      $this->addElement('submit', $this->_csvButtonName, $label);
-    }
-
-    if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
-      $this->addElement('select', 'groups', ts('Group'),
-        array('' => ts('Add Contacts to Group')) + CRM_Core_PseudoConstant::nestedGroup(),
-        array('class' => 'crm-select2 crm-action-menu action-icon-plus huge')
-      );
-      $this->assign('group', TRUE);
-    }
-
-    $this->addElement('submit', $this->_groupButtonName, '', array('style' => 'display: none;'));
-
-    $this->addChartOptions();
-    $this->addButtons(array(
-        array(
-          'type' => 'submit',
-          'name' => ts('Preview Report'),
-          'isDefault' => TRUE,
-        ),
-      )
+    $this->addElement('select', 'groups', ts('Group'),
+      array('' => ts('Add Contacts to Group')) + CRM_Core_PseudoConstant::nestedGroup(),
+      array('class' => 'crm-select2 crm-action-menu action-icon-plus huge')
     );
+    $this->addElement('hidden', "charts", ts('Chart'));
+  }
+
+  function getInstanceActions($instanceId) {
+    $actions = array(
+      'view' => 'View Results',
+      'save' => 'Save',
+      'copy' => 'Save a Copy',
+      'create' => 'Create Report',
+      'print' => 'Print Report',
+      'pdf' => 'Print to PDF',
+    );
+    if ($this->_csvSupported) {
+      $actions['csv'] = 'Export as CSV';
+    }
+    if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
+      $actions['group'] = 'Add These Contacts to Group';
+    }
+    if (!empty($this->_charts)) {
+      $this->assign('charts', $this->_charts);
+      if ($this->_format != '') {
+        $actions['tabular'] = 'View as tabular data';
+      }
+      if ($this->_format != 'pieChart') {
+        $actions['pieChart'] = 'View as pie chart';
+      }
+      if ($this->_format != 'barChart') {
+        $actions['barChart'] = 'View as bar graph';
+      }
+    }
+    if ($instanceId && CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceId)) {
+      $actions['settings'] = 'Edit report settings';
+    }
+    if (CRM_Core_Permission::check('administer Reports')) {
+      $actions['delete'] = 'Delete report';
+    }
+    return $actions;
   }
 
   function buildQuickForm() {
     $this->addColumns();
-
     $this->addFilters();
-
     $this->addOptions();
-
     $this->addGroupBys();
-
     $this->addOrderBys();
-
-    $this->buildInstanceAndButtons();
-
-    //add form rule for report
-    if (is_callable(array(
-          $this, 'formRule'))) {
+    $this->buildButtons();
+    if (is_callable(array($this, 'formRule'))) {
       $this->addFormRule(array(get_class($this), 'formRule'), $this);
     }
   }
@@ -2180,61 +2151,28 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
   }
   function processReportMode() {
-    $buttonName = $this->controller->getButtonName();
-
-    $output = CRM_Utils_Request::retrieve(
-      'output',
-      'String',
-      CRM_Core_DAO::$_nullObject
-    );
-
-    $this->_sendmail =
-      CRM_Utils_Request::retrieve(
-        'sendmail',
-        'Boolean',
-        CRM_Core_DAO::$_nullObject
-      );
-
+    $output = $this->_outputMode;
+    $this->_sendmail = CRM_Utils_Request::retrieve('sendmail', 'Boolean', CRM_Core_DAO::$_nullObject);
     $this->_absoluteUrl = FALSE;
     $printOnly = FALSE;
     $this->assign('printOnly', FALSE);
-
-    if ($this->_printButtonName == $buttonName || $output == 'print' || ($this->_sendmail && !$output)) {
+    if ($output == 'print' || ($this->_sendmail && !$output)) {
       $this->assign('printOnly', TRUE);
       $printOnly = TRUE;
-      $this->assign('outputMode', 'print');
-      $this->_outputMode = 'print';
       if ($this->_sendmail) {
         $this->_absoluteUrl = TRUE;
+      }
     }
-    }
-    elseif ($this->_pdfButtonName == $buttonName || $output == 'pdf') {
+    elseif ($output == 'pdf') {
       $this->assign('printOnly', TRUE);
       $printOnly = TRUE;
-      $this->assign('outputMode', 'pdf');
-      $this->_outputMode = 'pdf';
       $this->_absoluteUrl = TRUE;
     }
-    elseif ($this->_csvButtonName == $buttonName || $output == 'csv') {
+    elseif ($output == 'csv') {
       $this->assign('printOnly', TRUE);
       $printOnly = TRUE;
-      $this->assign('outputMode', 'csv');
-      $this->_outputMode = 'csv';
       $this->_absoluteUrl = TRUE;
     }
-    elseif ($this->_groupButtonName == $buttonName || $output == 'group') {
-      $this->assign('outputMode', 'group');
-      $this->_outputMode = 'group';
-    }
-    elseif ($output == 'create_report' && $this->_criteriaForm) {
-      $this->assign('outputMode', 'create_report');
-      $this->_outputMode = 'create_report';
-    }
-    else {
-      $this->assign('outputMode', 'html');
-      $this->_outputMode = 'html';
-    }
-
     // Get today's date to include in printed reports
     if ($printOnly) {
       $reportDate = CRM_Utils_Date::customFormat(date('Y-m-d H:i'));
@@ -2245,12 +2183,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   function beginPostProcess() {
     $this->setParams($this->controller->exportValues($this->_name));
 
-    if (empty($this->_params) &&
-      $this->_force
-    ) {
-      $this->setParams($this->_formValues);
-    }
-
     // hack to fix params when submitted from dashboard, CRM-8532
     // fields array is missing because form building etc is skipped
     // in dashboard mode for report
@@ -2260,14 +2192,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
 
     $this->_formValues = $this->_params;
-    if (CRM_Core_Permission::check('administer Reports') &&
-      isset($this->_id) &&
-      ($this->_instanceButtonName == $this->controller->getButtonName() . '_save' ||
-        $this->_chartButtonName == $this->controller->getButtonName()
-      )
-    ) {
-      $this->assign('updateReportButton', TRUE);
-    }
     $this->processReportMode();
     $this->beginPostProcessCommon();
   }
@@ -2682,10 +2606,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * @param null $rows
    */
   function endPostProcess(&$rows = NULL) {
+    $report_header = CRM_Utils_Array::value('header', $this->_instanceValues);
+    $report_footer = CRM_Utils_Array::value('footer', $this->_instanceValues);
     if ( $this->_storeResultSet ) {
       $this->_resultSet = $rows;
     }
-
     if ($this->_outputMode == 'print' ||
       $this->_outputMode == 'pdf' ||
       $this->_sendmail
@@ -2701,7 +2626,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $attachments = array();
 
         if ($this->_outputMode == 'csv') {
-          $content = $this->_formValues['report_header'] . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a CSV file.') . '</p>' . $this->_formValues['report_footer'];
+          $content = $report_header . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a CSV file.') . '</p>' . $report_footer;
 
           $csvFullFilename = $config->templateCompileDir . CRM_Utils_File::makeFileName('CiviReport.csv');
           $csvContent = CRM_Report_Utils_Report::makeCsv($this, $rows);
@@ -2721,7 +2646,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             )
           );
           // generate Email Content
-          $content = $this->_formValues['report_header'] . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a PDF file.') . '</p>' . $this->_formValues['report_footer'];
+          $content = $report_header . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a PDF file.') . '</p>' . $report_footer;
 
           $attachments[] = array(
             'fullPath' => $pdfFullFilename,
@@ -2773,13 +2698,41 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $group = $this->_params['groups'];
       $this->add2group($group);
     }
-    elseif ($this->_instanceButtonName == $this->controller->getButtonName()) {
-      CRM_Report_Form_Instance::postProcess($this);
-    }
-    elseif ($this->_createNewButtonName == $this->controller->getButtonName() ||
-            $this->_outputMode == 'create_report' ) {
-      $this->_createNew = TRUE;
-      CRM_Report_Form_Instance::postProcess($this);
+    elseif ($this->_outputMode == 'save' || $this->_outputMode == 'copy' || $this->_outputMode == 'create') {
+      $instance_values = $this->_instanceValues;
+      $form_values = $this->_submitValues;
+      unset($form_values['qfKey']);
+      unset($form_values['_qf_default']);
+      if ($this->_outputMode == 'save') {
+        $message = '"%1" report has been successfully updated.';
+        $redirect = FALSE;
+      }
+      elseif ($this->_outputMode == 'copy') {
+        unset($instance_values['id']);
+        unset($instance_values['navigation_id']);
+        $instance_values['title'] = "Copy of {$instance_values['title']}";
+        $message = '"%1" report has been successfully copied. You are currently viewing the new report instance.';
+        $redirect = TRUE;
+      }
+      elseif ($this->_outputMode == 'create') {
+        $report_id = CRM_Report_Utils_Report::getValueFromUrl();
+        $report_template = CRM_Core_OptionGroup::getRowValues('report_template', $report_id, 'value');
+        if ($report_template) {
+          $instance_values = array(
+            'title' => "Copy of {$report_template['label']}",
+            'report_id' => $report_id,
+            'description' => $report_template['description'],
+          );
+        }
+        $message = '"%1" report has been successfully created. You are currently viewing the new report instance.';
+        $redirect = TRUE;
+      }
+      $instance_values['form_values'] = serialize($form_values);
+      $instance = CRM_Report_BAO_ReportInstance::create($instance_values);
+      CRM_Core_Session::setStatus(ts($message, array(1 => $instance->title)), '', 'success');
+      if ($redirect) {
+        CRM_Utils_System::redirect(CRM_Utils_System::url("civicrm/report/instance/{$instance->id}/settings", "reset=1"));
+      }
     }
   }
 
@@ -2826,28 +2779,27 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    */
   function compileContent(){
     $templateFile = $this->getHookedTemplateFileName();
-    return $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
+    $report_header = CRM_Utils_Array::value('header', $this->_instanceValues);
+    $report_footer = CRM_Utils_Array::value('footer', $this->_instanceValues);
+    return $report_header . CRM_Core_Form::$_template->fetch($templateFile) . $report_footer;
   }
 
 
   function postProcess() {
     // get ready with post process params
     $this->beginPostProcess();
-
-    // build query
-    $sql = $this->buildQuery();
-
-    // build array of result based on column headers. This method also allows
-    // modifying column headers before using it to build result set i.e $rows.
-    $rows = array();
-    $this->buildRows($sql, $rows);
-
-    // format result set.
-    $this->formatDisplay($rows);
-
-    // assign variables to templates
-    $this->doTemplateAssignment($rows);
-
+    if ($this->_outputMode != 'save') {
+      // build query
+      $sql = $this->buildQuery();
+      // build array of result based on column headers. This method also allows
+      // modifying column headers before using it to build result set i.e $rows.
+      $rows = array();
+      $this->buildRows($sql, $rows);
+      // format result set.
+      $this->formatDisplay($rows);
+      // assign variables to templates
+      $this->doTemplateAssignment($rows);
+    }
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
   }
@@ -3596,7 +3548,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       if ($value = $row['civicrm_address_country_id']) {
         $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country($value, FALSE);
         $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
-               "reset=1&force=1&{$criteriaQueryParams}&" .
+               "reset=1&output=view&format=&{$criteriaQueryParams}&" .
                "country_id_op=in&country_id_value={$value}",
                $this->_absoluteUrl, $this->_id
         );
@@ -3612,7 +3564,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       if ($value = $row['civicrm_address_county_id']) {
         $rows[$rowNum]['civicrm_address_county_id'] = CRM_Core_PseudoConstant::county($value, FALSE);
         $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
-               "reset=1&force=1&{$criteriaQueryParams}&" .
+               "reset=1&output=view&format=&{$criteriaQueryParams}&" .
                "county_id_op=in&county_id_value={$value}",
                $this->_absoluteUrl, $this->_id
         );
@@ -3629,7 +3581,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
 
         $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
-               "reset=1&force=1&{$criteriaQueryParams}&state_province_id_op=in&state_province_id_value={$value}",
+               "reset=1&output=view&format=&{$criteriaQueryParams}&state_province_id_op=in&state_province_id_value={$value}",
                $this->_absoluteUrl, $this->_id
         );
         $rows[$rowNum]['civicrm_address_state_province_id_link'] = $url;

@@ -936,8 +936,18 @@ CRM.strings = CRM.strings || {};
         }
         $(this).parent().toggleClass('collapsed');
         e.preventDefault();
+      })
+      // Handle actions links show/hide
+      .on('click', function(e) {
+        if ($(e.target).is('.crm-actions-list-link, .crm-actions-list-link *')) {
+          $('.crm-actions-list').hide();
+          $(e.target).parents('.crm-actions-list-wrapper').children('.crm-actions-list').show();
+          e.preventDefault();
+        }
+        else {
+          $('.crm-actions-list').hide();
+        }
       });
-
     $().crmtooltip();
   });
   /**

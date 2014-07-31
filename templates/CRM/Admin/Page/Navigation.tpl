@@ -41,6 +41,12 @@
     <div class="spacer"></div>
     <div id="navigation-tree" class="navigation-tree" style="height:auto; border-collapse:separate; background-color:#FFFFFF;"></div>
     <div class="spacer"></div>
+    <div>
+      <a href="{crmURL p="civicrm/admin/menu/rebuild_default_reports_menu"
+q="reset=1"}"><span>{ts}Click here{/ts}</span></a> to reset the reports menu
+structure to the default.
+    </div>
+    <div class="spacer"></div>
   </div>
   {literal}
   <style type="text/css">

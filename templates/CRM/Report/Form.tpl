@@ -36,9 +36,9 @@
     <div class="crm-block crm-content-block crm-report-layoutTable-form-block">
         {*include the table layout*}
         {include file="CRM/Report/Form/Layout/Table.tpl"}
-  </div>
+    </div>
     {else}
-    {if $criteriaForm OR $instanceForm OR $instanceFormError}
+    {if $criteriaForm OR $instanceFormError}
     <div class="crm-block crm-form-block crm-report-field-form-block">
         {include file="CRM/Report/Form/Fields.tpl"}
     </div>
