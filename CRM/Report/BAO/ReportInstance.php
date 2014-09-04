@@ -91,6 +91,10 @@ class CRM_Report_BAO_ReportInstance extends CRM_Report_DAO_ReportInstance {
       $instance->permission = 'null';
     }
 
+    if (empty($params['owner_id'])) {
+      $instance->owner_id = 'null';
+    }
+
     // explicitly set to null if params value is empty
     if (!$instanceID && empty($params['grouprole'])) {
       $instance->grouprole = 'null';
@@ -100,7 +104,7 @@ class CRM_Report_BAO_ReportInstance extends CRM_Report_DAO_ReportInstance {
       $instance->id = $instanceID;
     }
 
-    if (! $instanceID) {
+    if (!$instanceID) {
       if ($reportID = CRM_Utils_Array::value('report_id', $params)) {
         $instance->report_id = $reportID;
       } else if ($instanceID) {

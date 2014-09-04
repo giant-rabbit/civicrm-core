@@ -93,6 +93,14 @@
         <span class="description">{ts}If reserved, only users with 'administer reserved reports' permission can modify this report instance.{/ts}</span>
       </td>
     </tr>
+    <tr class="crm-report-instanceForm-form-block-add_to_my_reports">
+      <td class="report-label">{$form.add_to_my_reports.label}</td>
+      <td>{$form.add_to_my_reports.html}
+        <span class="description">{ts}If checked, this report will appear in
+the My Reports section of the reports listing page and will only be visible
+by you.{/ts}</span>
+      </td>
+    </tr>
     <tr class="crm-report-instanceForm-form-block-addToDashboard">
       <td class="report-label">{$form.addToDashboard.label} {help id="id-dash_avail" file="CRM/Report/Form/Settings.hlp"}</td>
       <td>{$form.addToDashboard.html}

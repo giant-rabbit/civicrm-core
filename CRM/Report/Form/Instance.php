@@ -126,6 +126,7 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
     if (!CRM_Core_Permission::check('administer reserved reports')) {
       $this->freeze('is_reserved');
     }
+    $this->addElement('checkbox', 'add_to_my_reports', ts('Add to My Reports'));
 
     $config = CRM_Core_Config::singleton();
     if ($config->userFramework != 'Joomla' || $config->userFramework != 'WordPress') {
@@ -240,6 +241,9 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
         $defaults['grouprole'] = $grouproles;
       }
     }
+    if (CRM_Utils_Array::value('owner_id', $defaults) != NULL) {
+      $defaults['add_to_my_reports'] = 1;
+    }
 
     return $defaults;
   }
@@ -254,6 +258,11 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
     $submitValues['instance_id'] = $id;
     if (!empty($submitValues['is_navigation'])) {
       $submitValues['navigation'] = $this->_navigation;
+    }
+    if (CRM_Utils_Array::value('add_to_my_reports', $submitValues) == 1) {
+      $session = CRM_Core_Session::singleton();
+      $contact_id = $session->get('userID');
+      $submitValues['owner_id'] = $contact_id;
     }
     $instance = CRM_Report_BAO_ReportInstance::create($submitValues);
     CRM_Core_Session::setStatus(ts('"%1" report has been updated.', array(1 => $instance->title)), '', 'success');
