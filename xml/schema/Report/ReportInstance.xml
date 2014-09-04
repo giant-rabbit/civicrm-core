@@ -227,4 +227,18 @@
     </html>
     <add>4.2</add>
   </field>
+  <field>
+    <name>owner_id</name>
+    <type>int unsigned</type>
+    <title>Report Owned By</title>
+    <comment>FK to civicrm_contact ID.</comment>
+    <add>4.6</add>
+  </field>
+  <foreignKey>
+    <name>owner_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>4.6</add>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
 </table>
