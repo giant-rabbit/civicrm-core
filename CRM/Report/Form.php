@@ -2711,6 +2711,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         unset($instance_values['id']);
         unset($instance_values['navigation_id']);
         $instance_values['title'] = "Copy of {$instance_values['title']}";
+        // Default the copied report to be owned by the current user.
+        $session = CRM_Core_Session::singleton();
+        $contact_id = $session->get('userID');
+        $instance_values['owner_id'] = $contact_id;
         $message = '"%1" report has been successfully copied. You are currently viewing the new report instance.';
         $redirect = TRUE;
       }
