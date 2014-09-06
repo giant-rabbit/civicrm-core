@@ -246,10 +246,16 @@ WHERE  inst.report_id = %1";
     return $csv;
   }
 
-  static function getInstanceID() {
+  /**
+   * @return mixed
+   */
+  static function getInstanceID($path = NULL) {
 
     $config = CRM_Core_Config::singleton();
-    $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
+    if ($path === NULL) {
+      $path = $_GET[$config->userFrameworkURLVar];
+    }
+    $arg = explode('/', $path);
 
     if ($arg[1] == 'report' &&
       CRM_Utils_Array::value(2, $arg) == 'instance'

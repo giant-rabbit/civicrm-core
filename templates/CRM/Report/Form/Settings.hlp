@@ -76,3 +76,11 @@ This is particularly useful for report instances whose criteria affect the data 
 Contact Logging Summary affect the columns shown under each contact's Change Log tab.{/ts}
 {/htxt}
 
+{htxt id="id-add_to_my_reports-title"}
+  {ts}Add to My Reports{/ts}
+{/htxt}
+{htxt id="id-add_to_my_reports"}
+{ts}Checking this option will set the report to be visible only to the user
+that clicked this option and saved the report settings form. If this is
+enabled, the permissions configuration for this report will be disabled.{/ts}
+{/htxt}
