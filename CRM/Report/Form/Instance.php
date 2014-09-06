@@ -270,6 +270,8 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
       $session = CRM_Core_Session::singleton();
       $contact_id = $session->get('userID');
       $submitValues['owner_id'] = $contact_id;
+      $submitValues['permission'] = 'access own private reports';
+      $submitValues['grouprole'] = array();
     }
     $instance = CRM_Report_BAO_ReportInstance::create($submitValues);
     CRM_Core_Session::setStatus(ts('"%1" report has been updated.', array(1 => $instance->title)), '', 'success');

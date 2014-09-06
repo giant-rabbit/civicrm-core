@@ -235,6 +235,9 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
         elseif ($action == 'tabular') {
           $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}", "format=&output=view&reset=1");
         }
+        elseif ($action == 'settings') {
+          $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}/settings", "reset=1");
+        }
         else {
           $links[$action]['url'] = CRM_Utils_System::url("civicrm/report/instance/{$instance->id}", "output={$action}&reset=1");
         }

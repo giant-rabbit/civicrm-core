@@ -528,6 +528,12 @@ ORDER BY parent_id, weight";
               return $showItem;
             }
           }
+          elseif ($key == 'access own private reports') {
+            // Special permission processing for private reports.
+            $report_url = parse_url(ltrim($url, '/'));
+            $instance_id = CRM_Report_Utils_Report::getInstanceID($report_url['path']);
+            $hasPermission = $showItem = CRM_Report_BAO_ReportInstance::contactIsOwner($instance_id);
+          }
           else {
             $hasPermission = TRUE;
           }

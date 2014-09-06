@@ -84,7 +84,7 @@ class CRM_Report_Info extends CRM_Core_Component_Info {
    * @return array|null
    */
   public function getPermissions($getAllUnconditionally = FALSE) {
-    return array('access CiviReport', 'access Report Criteria', 'administer reserved reports', 'administer Reports');
+    return array('access CiviReport', 'access Report Criteria', 'access own private reports', 'administer reserved reports', 'administer Reports');
   }
 
 
