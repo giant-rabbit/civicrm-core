@@ -84,8 +84,8 @@
 </div>
 {literal}
   <script type="text/javascript" >
-  CRM.$(function($) {
-    $('.save input.crm-form-submit').click( function() {
+  cj(document).ready(function() {
+    cj('.save input.form-submit').click( function() {
       return window.confirm('{/literal}{ts}Save will overwrite the default criteria for the "{/ts}{$reportTitle}{ts}" report. If you do not wish to do this, click "Cancel" and "Save a Copy" instead.{/ts}{literal}');
     });
   });
