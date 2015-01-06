@@ -179,7 +179,7 @@ class CRM_Report_BAO_ReportInstance extends CRM_Report_DAO_ReportInstance {
       if ($permission = CRM_Utils_Array::value('permission', $params)) {
         $navigationParams['permission'][] = $permission;
       }
-      $navigationParams['url'] = "civicrm/report/instance/{$instance->id}&reset=1";
+      $navigationParams['url'] = "civicrm/report/instance/{$instance->id}?reset=1";
       $navigation = CRM_Core_BAO_Navigation::add($navigationParams);
       // set the navigation id in report instance table
       CRM_Core_DAO::setFieldValue('CRM_Report_DAO_ReportInstance', $instance->id, 'navigation_id', $navigation->id);
