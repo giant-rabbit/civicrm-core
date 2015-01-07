@@ -1710,23 +1710,34 @@ editor specific classes
   vertical-align: middle;
 }
 
-#crm-container .crm-actions-list-wrapper .crm-actions-list-link {
-  padding: 3px 3px;
+#crm-container .crm-actions-list-link {
+  padding: 0 6px;
+  position: relative;
+  z-index: 0;
+}
+
+#crm-container .crm-actions-list-link span {
+  line-height: 16px;
+  padding: 0;
 }
 
 #crm-container .crm-actions-list-wrapper .crm-actions-list {
   background: url(../i/dropdown-pointer.gif) no-repeat 25px 1px;
   text-align: left;
   padding-top: 5px;
-  margin-top: 27px;
+  margin-top: 18px;
   position: absolute;
   z-index: 1;
   display: none;
 }
 
+#crm-container .crm-actions-list-wrapper.more .crm-actions-list-link span {
+  padding-right: 14px;
+}
+
 #crm-container .crm-actions-list-wrapper.more .crm-actions-list {
   margin-top: 0;
-  background-position-x: 128px;
+  background-position-x: 100px;
 }
 
 #crm-container .crm-actions-list-wrapper ul {
@@ -1750,6 +1761,8 @@ editor specific classes
   padding: 2px;
   margin: 0;
   cursor: pointer;
+  text-shadow: none;
+  font-size: 12px;
 }
 
 #crm-container .crm-actions-list-wrapper ul li:hover,
