@@ -1031,7 +1031,7 @@ class CRM_Report_Form extends CRM_Core_Form {
       }
       elseif ($id == 'group') {
         $button_name = $this->getButtonName('submit', $id);
-        $this->addElement('submit', $button_name, '', array('style' => 'display: none;'));
+        $this->addElement('submit', $button_name, ts('Add Contacts to Group'), array('onclick' => 'return checkGroup();'));
         $this->assign("{$id}Button", $button_name);
       }
       else {
@@ -1041,9 +1041,9 @@ class CRM_Report_Form extends CRM_Core_Form {
       }
     }
     $this->addElement('select', 'groups', ts('Group'),
-      array('' => ts('Add Contacts to Group')) + CRM_Core_PseudoConstant::nestedGroup(),
-      array('class' => 'crm-select2 crm-action-menu action-icon-plus huge')
+      array('' => ts('- select group -')) + CRM_Core_PseudoConstant::staticGroup()
     );
+
     $this->addElement('hidden', "charts", ts('Chart'));
   }
 
