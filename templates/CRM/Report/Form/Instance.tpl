@@ -156,10 +156,10 @@ by you.{/ts}</span>
               }
           }
       );
-      $('#add_to_my_reports').click(function() {
+      cj('#add_to_my_reports').click(function() {
         showHideByValue('add_to_my_reports','','permission-field|acl-field','table-row','radio',true);
-        if (!$('#add_to_my_reports').is(':checked') && $("#permission option:selected").val() == 'access own private reports') {
-          $("#permission").val('access CiviReport'); 
+        if (!cj('#add_to_my_reports').is(':checked') && cj("#permission option:selected").val() == 'access own private reports') {
+          cj("#permission").val('access CiviReport');
         }
       });
       showHideByValue('add_to_my_reports','','permission-field|acl-field','table-row','radio',true);
