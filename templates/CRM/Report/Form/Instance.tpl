@@ -97,9 +97,7 @@ id="permission-field">
   <tr class="crm-report-instanceForm-form-block-add_to_my_reports">
     <td class="report-label">{$form.add_to_my_reports.label} {help id="id-add_to_my_reports" file="CRM/Report/Form/Settings.hlp"}</td>
     <td>{$form.add_to_my_reports.html}
-      <span class="description">{ts}If checked, this report will appear in
-the My Reports section of the reports listing page and will only be visible
-by you.{/ts}</span>
+      <br><span class="description">{ts}If set to Yes, this report will appear in the My Reports section of the reports listing page and will only be visible by you.{/ts}</span>
       </td>
     </tr>
       <tr class="crm-report-instanceForm-form-block-addToDashboard">
@@ -156,9 +154,9 @@ by you.{/ts}</span>
               }
           }
       );
-      cj('#add_to_my_reports').click(function() {
+      cj('#CIVICRM_QFID_1_add_to_my_reports, #CIVICRM_QFID_0_add_to_my_reports').click(function() {
         showHideByValue('add_to_my_reports','','permission-field|acl-field','table-row','radio',true);
-        if (!cj('#add_to_my_reports').is(':checked') && cj("#permission option:selected").val() == 'access own private reports') {
+        if (cj('#CIVICRM_QFID_0_add_to_my_reports').is(':checked') && cj("#permission option:selected").val() == 'access own private reports') {
           cj("#permission").val('access CiviReport');
         }
       });

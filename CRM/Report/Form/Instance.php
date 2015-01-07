@@ -126,7 +126,7 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
     if (!CRM_Core_Permission::check('administer reserved reports')) {
       $this->freeze('is_reserved');
     }
-    $this->addElement('checkbox', 'add_to_my_reports', ts('Add to My Reports'));
+    $this->addYesNo('add_to_my_reports', ts('Add to My Reports'));
 
     $config = CRM_Core_Config::singleton();
     if ($config->userFramework != 'Joomla' || $config->userFramework != 'WordPress') {
@@ -241,6 +241,7 @@ class CRM_Report_Form_Instance extends CRM_Core_Form {
         $defaults['grouprole'] = $grouproles;
       }
     }
+    $defaults['add_to_my_reports'] = 0;
     if (CRM_Utils_Array::value('owner_id', $defaults) != NULL) {
       $defaults['add_to_my_reports'] = 1;
     }
