@@ -97,6 +97,8 @@ class CRM_Admin_Page_RebuildDefaultReportsMenu extends CRM_Core_Page {
     
     // Create or update the All Reports link.
     $all_reports_nav = self::createOrUpdateReportNavItem('All Reports', 'civicrm/report/list', 'reset=1', $reports_nav->id, 'access CiviReport');
+    // Create or update the My Reports link.
+    $my_reports_nav = self::createOrUpdateReportNavItem('My Reports', 'civicrm/report/list', 'myreports=1&reset=1', $reports_nav->id, 'access CiviReport');
   }
 
   function getAllActiveReportsByComponent($domain_id) {

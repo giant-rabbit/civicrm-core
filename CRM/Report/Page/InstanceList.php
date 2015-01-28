@@ -88,12 +88,12 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
    * @static
    */
   public function &info() {
-
+    $session = CRM_Core_Session::singleton();
+    $contact_id = $session->get('userID');
     $report = '';
     if ($this->ovID) {
       $report .= " AND v.id = {$this->ovID} ";
     }
-
     if ($this->compID) {
       if ($this->compID == 99) {
         $report .= " AND v.component_id IS NULL ";
@@ -111,6 +111,9 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
     }
     elseif ($this->grouping) {
       $report .= " AND v.grouping = '{$this->grouping}' ";
+    }
+    elseif ($this->myReports) {
+      $report .= " AND inst.owner_id = '{$contact_id}' ";
     }
 
     $sql = "
@@ -141,8 +144,6 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
     $config = CRM_Core_Config::singleton();
     $rows = array();
     $url = 'civicrm/report/instance';
-    $session = CRM_Core_Session::singleton();
-    $contact_id = $session->get('userID');
     $my_reports_label = ts('My ');
     while ($dao->fetch()) {
       if (in_array($dao->report_id, self::$_exceptions)) {
@@ -200,6 +201,7 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
     //Filters by source report template or by component
     $this->ovID = CRM_Utils_Request::retrieve('ovid', 'Positive', $this);
     $this->compID = CRM_Utils_Request::retrieve('compid', 'Positive', $this);
+    $this->myReports = CRM_Utils_Request::retrieve('myreports', 'String', $this);
     $this->grouping = CRM_Utils_Request::retrieve('grp', 'String', $this);
 
     $rows = $this->info();
@@ -227,6 +229,7 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page {
       $this->assign('newButton', $newButton);
       $this->assign('templateUrl', $templateUrl);
       $this->assign('compName', $this->_compName);
+      $this->assign('myReports', $this->myReports);
     }
     return parent::run();
   }

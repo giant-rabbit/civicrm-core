@@ -887,6 +887,7 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( @domainID, 'civicrm/report/list?reset=1', '{ts escape="sql" skip="true"}All Reports{/ts}', 'All Reports', 'access CiviReport', '', @reportLastID, '1', 1, 10 );
+    ( @domainID, 'civicrm/report/list?myreports=1&reset=1', '{ts escape="sql" skip="true"}My Reports{/ts}', 'My Reports', 'access CiviReport', '', @reportLastID, '1', 1, 15 );
 
 -- sample report instances
 
