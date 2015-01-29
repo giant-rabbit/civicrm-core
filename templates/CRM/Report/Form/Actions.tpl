@@ -55,7 +55,9 @@
                     </ul>
                   </div>
                 </td>
-                <td class='save'>{$form.$saveButton.html}&nbsp;&nbsp;</td>
+                {if $saveButton}
+                  <td class='save'>{$form.$saveButton.html}&nbsp;&nbsp;</td>
+                {/if}
                 <td>{$form.$copyButton.html}&nbsp;&nbsp;</td>
               {/if}
               <td>{$form.$viewButton.html}&nbsp;&nbsp;</td>

@@ -56,13 +56,12 @@ class CRM_Report_Page_Instance extends CRM_Core_Page {
     $optionVal = CRM_Report_Utils_Report::getValueFromUrl($instanceId);
     $reportUrl = CRM_Utils_System::url('civicrm/report/list', "reset=1");
 
-    if (is_numeric($instanceId) && !CRM_Core_Permission::check('administer Reports') && !CRM_Report_BAO_ReportInstance::contactIsOwner($instanceId)) {
-      $statusMessage = ts('You do not have permission to access this private report.');
-      CRM_Core_Error::statusBounce($statusMessage, $reportUrl);
+    if (isset($this->urlPath[4]) && $this->urlPath[4] == 'settings' && !CRM_Report_BAO_ReportInstance::contactCanAdministerReport($instanceId)) {
+      CRM_Core_Error::statusBounce(ts('You do not have permission to administer this private report.'));
     }
     if ($action & CRM_Core_Action::DELETE) {
-      if (!CRM_Core_Permission::check('administer Reports')) {
-        $statusMessage = ts('You do not have permission to Delete Report.');
+      if (!CRM_Report_BAO_ReportInstance::contactCanAdministerReport($instanceId)) {
+        $statusMessage = ts('You do not have permission to Delete this report.');
         CRM_Core_Error::statusBounce($statusMessage, $reportUrl);
       }
 

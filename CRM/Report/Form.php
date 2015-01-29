@@ -1029,33 +1029,34 @@ class CRM_Report_Form extends CRM_Core_Form {
         $settingsUrl = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}/settings", 'reset=1');
         $this->assign('settingsUrl', $settingsUrl);
       }
-      elseif ($id == 'group') {
-        $button_name = $this->getButtonName('submit', $id);
-        $this->addElement('submit', $button_name, ts('Add Contacts to Group'), array('onclick' => 'return checkGroup();'));
-        $this->assign("{$id}Button", $button_name);
-      }
       else {
         $button_name = $this->getButtonName('submit', $id);
-        $this->addElement('submit', $button_name, ts($label));
+        if ($id == 'group') {
+          $this->addElement('submit', $button_name, ts('Add Contacts to Group'), array('onclick' => 'return checkGroup();'));
+        }
+        else {
+          $this->addElement('submit', $button_name, ts($label));
+        }
         $this->assign("{$id}Button", $button_name);
       }
     }
     $this->addElement('select', 'groups', ts('Group'),
       array('' => ts('- select group -')) + CRM_Core_PseudoConstant::staticGroup()
     );
-
     $this->addElement('hidden', "charts", ts('Chart'));
   }
 
   function getInstanceActions($instanceId) {
     $actions = array(
       'view' => 'View Results',
-      'save' => 'Save',
       'copy' => 'Save a Copy',
       'create' => 'Create Report',
       'print' => 'Print Report',
       'pdf' => 'Print to PDF',
     );
+    if (CRM_Report_BAO_ReportInstance::contactCanAdministerReport($instanceId)) {
+      $actions['save'] = 'Save';
+    }
     if ($this->_csvSupported) {
       $actions['csv'] = 'Export as CSV';
     }
@@ -1074,7 +1075,7 @@ class CRM_Report_Form extends CRM_Core_Form {
         $actions['barChart'] = 'View as bar graph';
       }
     }
-    if ($instanceId && CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceId)) {
+    if ($instanceId && CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceId) && CRM_Report_BAO_ReportInstance::contactCanAdministerReport($instanceId)) {
       $actions['settings'] = 'Edit report settings';
     }
     if (CRM_Core_Permission::check('administer Reports')) {
