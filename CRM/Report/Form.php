@@ -1054,6 +1054,9 @@ class CRM_Report_Form extends CRM_Core_Form {
       'print' => 'Print Report',
       'pdf' => 'Print to PDF',
     );
+    if ($this->_outputMode) {
+      $actions['view'] = 'Refresh Results';
+    }
     if (CRM_Report_BAO_ReportInstance::contactCanAdministerReport($instanceId)) {
       $actions['save'] = 'Save';
     }
