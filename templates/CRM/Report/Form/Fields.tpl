@@ -36,4 +36,11 @@
     </div><!-- /.crm-accordion-body -->
   </div><!-- /.crm-accordion-wrapper -->
 </div> {* criteria section ends *}
+{literal}
+<script type="text/javascript">
+cj(function() {
+   cj().crmAccordions();
+});
+</script>
+{/literal}
 {/if} {* NO print section ends *}
