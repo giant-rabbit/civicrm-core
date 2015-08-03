@@ -32,11 +32,12 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
   public $email = NULL;
   public $contribution_id = NULL;
   public $cart = NULL;
+  public $discount_amount = NULL;
+  public $event = NULL;
+  public $price_details = NULL;
+  public $total_amount = NULL;
+  public $total_cost = NULL;
 
-  //XXX
-  /**
-   * @param null $participant
-   */
   function __construct($participant = NULL) {
     parent::__construct();
     $a = (array)$participant;
@@ -45,13 +46,7 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
     $this->email = CRM_Utils_Array::value('email', $participant);
   }
 
-  /**
-   * @param array $params
-   *
-   * @return CRM_Event_Cart_BAO_MerParticipant
-   * @throws Exception
-   */
-  public static function &create($params) {
+  public static function &create(&$params) {
     $participantParams = array(
       'id' => CRM_Utils_Array::value('id', $params),
       'role_id' => self::get_attendee_role_id(),
@@ -75,18 +70,12 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
     return $mer_participant;
   }
 
-  /**
-   * @return mixed
-   */
   static function get_attendee_role_id() {
     $roles = CRM_Event_PseudoConstant::participantRole(NULL, "v.label='Attendee'");
     $role_names = array_keys($roles);
     return end($role_names);
   }
 
-  /**
-   * @return mixed
-   */
   static function get_pending_in_cart_status_id() {
     $status_types = CRM_Event_PseudoConstant::participantStatus(NULL, "name='Pending in cart'");
     $status_names = array_keys($status_types);
@@ -148,11 +137,9 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
   function load_associations() {
     $contact_details = CRM_Contact_BAO_Contact::getContactDetails($this->contact_id);
     $this->email = $contact_details[1];
+    $this->event = CRM_Event_BAO_Event::findById($this->event_id);
   }
 
-  /**
-   * @return int
-   */
   function get_participant_index() {
     if (!$this->cart) {
       $this->cart = CRM_Event_Cart_BAO_Cart::find_by_id($this->cart_id);
@@ -162,11 +149,6 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
     return $index + 1;
   }
 
-  /**
-   * @param $contact
-   *
-   * @return null
-   */
   static function billing_address_from_contact($contact) {
     foreach ($contact->address as $loc) {
       if ($loc['is_billing']) {
@@ -181,11 +163,26 @@ class CRM_Event_Cart_BAO_MerParticipant extends CRM_Event_BAO_Participant {
     return NULL;
   }
 
-  /**
-   * @return CRM_Event_Cart_Form_MerParticipant
-   */
   function get_form() {
     return new CRM_Event_Cart_Form_MerParticipant($this);
+  }
+
+  function do_discount_adjustments() {
+    if ($this->event == NULL) {
+      $this->load_associations();
+    }
+    $this->total_amount = 0;
+    $this->total_cost = 0;
+    foreach ($this->price_details as &$price_detail) {
+      foreach ($price_detail as &$line_item) {
+        $this->total_cost += $line_item['line_total'];
+        $price_total = $line_item['line_total'] - $this->discount_amount;
+        $this->total_amount += $price_total;
+        $line_item['line_total'] = $price_total;
+        $line_item['unit_price'] = $price_total;
+        $line_item['financial_type_id'] = $this->event->financial_type_id;
+      }
+    }
   }
 }
 

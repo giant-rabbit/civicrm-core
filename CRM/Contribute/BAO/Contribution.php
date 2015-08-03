@@ -517,6 +517,45 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
     return $contribution;
   }
 
+  static function findAllByParticipantId($participant_id)
+  {
+    $sql = <<<EOS
+        SELECT DISTINCT
+          civicrm_contribution.*
+        FROM
+          civicrm_entity_financial_trxn
+        JOIN
+          civicrm_entity_financial_trxn financial_item_financial_trxn ON (civicrm_entity_financial_trxn.financial_trxn_id = financial_item_financial_trxn.financial_trxn_id)
+        JOIN
+          civicrm_financial_item ON (financial_item_financial_trxn.entity_id = civicrm_financial_item.id AND financial_item_financial_trxn.entity_table = 'civicrm_financial_item')
+        JOIN
+          civicrm_line_item ON (civicrm_financial_item.entity_table = 'civicrm_line_item' and civicrm_financial_item.entity_id = civicrm_line_item.id)
+        JOIN
+          civicrm_contribution ON (civicrm_entity_financial_trxn.entity_id = civicrm_contribution.id)
+        WHERE
+          civicrm_line_item.entity_table = 'civicrm_participant'
+        AND
+          civicrm_line_item.entity_id = %1
+        AND
+          civicrm_entity_financial_trxn.entity_table = 'civicrm_contribution'
+      UNION
+        SELECT DISTINCT
+          civicrm_contribution.*
+        FROM
+          civicrm_contribution
+        JOIN
+          civicrm_participant_payment ON (civicrm_contribution.id = civicrm_participant_payment.contribution_id)
+        WHERE
+          civicrm_participant_payment.participant_id = %1
+EOS;
+    $dao = CRM_Core_DAO::executeQuery($sql, array(1 => array($participant_id, 'Integer')), TRUE, 'CRM_Contact_BAO_Contact');
+    $contributions = array();
+    while ($dao->fetch()) {
+      $contributions[] = clone($dao);
+    }
+    return $contributions;
+  }
+
   /**
    * combine all the importable fields from the lower levels object
    *

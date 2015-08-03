@@ -1,13 +1,13 @@
 {include file="CRM/common/TrackingFields.tpl"}
 
-<table>
+<table class="cart__checkout-events">
   <thead>
     <tr>
       <th class="event-title">
   {ts}Event{/ts}
       </th>
       <th class="participants-column">
-  {ts}Participants{/ts}
+  {ts}Participant(s){/ts}
       </th>
       <th class="cost">
   {ts}Price{/ts}
@@ -21,7 +21,7 @@
     {foreach from=$line_items item=line_item}
       <tr class="event-line-item {$line_item.class}">
   <td class="event-title">
-    {$line_item.event->title} ({$line_item.event->start_date})
+    {$line_item.event->title} ({if $line_item.multiple_day.multiple_day_description}{$line_item.multiple_day.multiple_day_description}{if $line_item.multiple_day.multiple_time_description} {$line_item.multiple_day.multiple_time_description}{/if}{else}{$line_item.event->start_date}{/if})
   </td>
   <td class="participants-column">
     {$line_item.num_participants}<br/>
@@ -78,7 +78,7 @@
     </tr>
    {/foreach}
    {/if}
-    <tr>
+    <tr class="total">
       <td>
       </td>
       <td>
@@ -93,94 +93,63 @@
   </tfoot>
 </table>
 {if $payment_required == true}
-<div class="crm-section {$form.is_pay_later.name}-section">
-  <div class="label">{$form.is_pay_later.label}</div>
-  <div class="content">{$form.is_pay_later.html}
-  </div>
-  <div class="clear"></div>
-</div>
-<div class="pay-later-instructions" style="display:none">
-  {$pay_later_instructions}
-</div>
 {include file='CRM/Core/BillingBlock.tpl'}
 {/if}
 {if $collect_billing_email == true}
-<div class="crm-section {$form.billing_contact_email.name}-section">
-  <div class="label">{$form.billing_contact_email.label}</div>
-  <div class="content">{$form.billing_contact_email.html}
+
+<div class="{$form.billing_contact_email.name}-group">
+  <div class="crm-section  {$form.billing_contact_email.name}-section">
+    <div class="label">{$form.billing_contact_email.label}</div>
+    <div class="content">{$form.billing_contact_email.html}</div>
+    <div class="clear"></div>
   </div>
-  <div class="clear"></div>
 </div>
-{/if}
 
 {if $administrator}
-<!--
-<div style="border: 1px solid blue; padding: 5px;">
-<b>{ts}Staff use only{/ts}</b>
-<div class="crm-section {$form.note.name}-section">
-  <div class="label">{$form.note.label}</div>
-  <div class="content">{$form.note.html}
-    <div class="description">{ts}Note that will be sent to the billing customer.{/ts}</div>
+<div class="admin_only-group">
+<h4>{ts}Staff use only{/ts}</h4>
+<div class="crm-section {$form.pay_by_check.name}-section">
+  <div class="label">{$form.pay_by_check.label}</div>
+  <div class="content">{$form.pay_by_check.html}
   </div>
   <div class="clear"></div>
 </div>
-<div class="crm-section {$form.source.name}-section">
-  <div class="label">{$form.source.label}</div>
-  <div class="content">{$form.source.html}
-    <div class="description">{ts}Description of this transaction.{/ts}</div>
-  </div>
+<div class="crm-section {$form.payment_completed.name}-section">
+  <div class="label">{$form.payment_completed.label}</div>
+  <div class="content">{$form.payment_completed.html}</div>
   <div class="clear"></div>
 </div>
-<div class="crm-section {$form.payment_type.name}-section">
-  <div class="label">{$form.payment_type.label}</div>
-  <div class="content">{$form.payment_type.html}
-  </div>
-  <div class="clear"></div>
-</div>
-<div class="crm-section {$form.check_number.name}-section" style="display: none;">
+<div class="crm-section {$form.check_number.name}-section">
   <div class="label">{$form.check_number.label}</div>
   <div class="content">{$form.check_number.html}</div>
   <div class="clear"></div>
 </div>
-<div class="crm-section {$form.is_pending.name}-section">
-  <div class="label">{$form.is_pending.label}</div>
-  <div class="content">{$form.is_pending.html}
-  </div>
-  <div class="clear"></div>
 </div>
-</div>
--->
+{/if}
+
 {/if}
 
 <script type="text/javascript">
 var pay_later_sel = "input#{$form.is_pay_later.name}";
 {literal}
 CRM.$(function($) {
-  function refresh() {
+  function togglePayLater() {
     var is_pay_later = $(pay_later_sel).prop("checked");
     $(".credit_card_info-group").toggle(!is_pay_later);
-    $(".pay-later-instructions").toggle(is_pay_later);
-    $("div.billingNameInfo-section .description").html(is_pay_later ? "Enter the billing address at which you can be invoiced." : "Enter the name as shown on your credit or debit card, and the billing address for this card.");
+    $(".check_number-section, .payment_completed-section").toggle(is_pay_later);
   }
-  $("input#source").prop('disabled', true);
-
   $(pay_later_sel).change(function() {
-    refresh();
+    togglePayLater();
   });
-  $(".payment_type-section :radio").change(function() {
-    var sel = $(this).attr("id");
-    $(".check_number-section").toggle(
-        $(this).is(":checked") &&
-        $("label[for="+sel+"]").html() == "{/literal}{ts escape='js'}Check{/ts}{literal}"
-    );
-  });
-  refresh();
+  togglePayLater();
 });
 {/literal}
 </script>
 
-<div id="crm-submit-buttons" class="crm-submit-buttons">
+<div class="crm-submit-buttons-wrapper">
+  <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="bottom"}
+  </div>
 </div>
 
 {include file="CRM/Event/Cart/Form/viewCartLink.tpl"}

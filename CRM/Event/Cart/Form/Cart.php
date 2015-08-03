@@ -166,6 +166,16 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
     return $contact_id;
   }
 
+  static function remove_temporary_contact_if_exists($contact_id) {
+    $contact = new CRM_Contact_BAO_Contact();
+    $contact->id = $contact_id;
+    if ($contact->find(TRUE)) {
+      if ($contact->is_deleted) {
+        $contact->delete();
+      }
+    }
+  }
+
   /**
    * @param $page_name
    *

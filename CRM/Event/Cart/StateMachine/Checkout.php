@@ -14,7 +14,7 @@ class CRM_Event_Cart_StateMachine_Checkout extends CRM_Core_StateMachine {
     $cart = CRM_Event_Cart_BAO_Cart::find_or_create_for_current_session();
     $cart->load_associations();
     if ($cart->is_empty()) {
-      CRM_Core_Error::statusBounce(ts("You don't have any events in you cart. Please add some events."), CRM_Utils_System::url('civicrm/event'));
+      CRM_Core_Error::statusBounce(ts("You don't have any events in your cart. Please add some events."), CRM_Utils_System::url('civicrm/event'));
     }
 
     $pages         = array();

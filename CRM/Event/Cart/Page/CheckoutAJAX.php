@@ -11,10 +11,13 @@ class CRM_Event_Cart_Page_CheckoutAJAX {
 
     $cart = CRM_Event_Cart_BAO_Cart::find_by_id($cart_id);
 
-	  $params_array = array('cart_id' => $cart->id, 'contact_id' => CRM_Event_Cart_Form_Cart::find_or_create_contact(), 'event_id' => $event_id);
-
-    //XXX security?
-    $participant = CRM_Event_Cart_BAO_MerParticipant::create($params_array);
+    $params = array
+    (
+      'cart_id' => $cart->id,
+      'contact_id' => CRM_Event_Cart_Form_Cart::find_or_create_contact(),
+      'event_id' => $event_id,
+    );
+    $participant = CRM_Event_Cart_BAO_MerParticipant::create($params);
     $participant->save();
 
     $form = new CRM_Core_Form();
@@ -44,7 +47,25 @@ class CRM_Event_Cart_Page_CheckoutAJAX {
   function remove_participant_from_cart() {
     $id = CRM_Utils_Request::retrieve('id', 'Integer');
     $participant = CRM_Event_Cart_BAO_MerParticipant::get_by_id($id);
+    $cart_id = $participant->cart_id;
+    $old_contact_id = $participant->contact_id;
     $participant->delete();
+
+    $cart = CRM_Event_Cart_BAO_Cart::find_by_id($cart_id);
+    $cart->load_associations();
+    $delete = TRUE;
+    foreach ($cart->get_main_event_participants() as $participant)
+    {
+      if ($participant->contact_id == $old_contact_id)
+      {
+        $delete = FALSE;
+        break;
+      }
+    }
+    if ($delete)
+    {
+      CRM_Event_Cart_Form_Cart::remove_temporary_contact_if_exists($contact_id);
+    }
 
     CRM_Utils_System::civiExit();
   }

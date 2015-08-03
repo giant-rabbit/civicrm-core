@@ -20,7 +20,6 @@ class CRM_Event_Cart_Form_MerParticipant extends CRM_Core_Form {
    */
   function appendQuickForm(&$form) {
     $textarea_size = array('size' => 30, 'maxlength' => 60);
-    $form->add('text', $this->email_field_name(), ts('Email Address'), $textarea_size, TRUE);
 
     list(
       $custom_fields_pre,
@@ -46,7 +45,7 @@ class CRM_Event_Cart_Form_MerParticipant extends CRM_Core_Form {
    *
    * @return array
    */
-  function get_profile_groups($event_id) {
+  static function get_profile_groups($event_id) {
     $ufJoinParams = array(
       'entity_table' => 'civicrm_event',
       'module' => 'CiviEvent',

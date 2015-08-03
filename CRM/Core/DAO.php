@@ -922,6 +922,16 @@ FROM   civicrm_domain
     return trim($version) == trim($dbVersion) ? TRUE : FALSE;
   }
 
+  static function findById($id) {
+    $object = new static();
+    $object->id = $id;
+    if (!$object->find(TRUE)) {
+      throw new Exception("Unable to find a " . get_called_class() . " with id {$id}.");
+    }
+    return $object;
+  }
+
+
   /**
    * Given a DAO name, a column name and a column value, find the record and GET the value of another column in that record
    *
