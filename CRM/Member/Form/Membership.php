@@ -1770,7 +1770,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
       $statusMsg .= ' ' . ts('The membership End Date is %1.', array(1 => $endDate));
     }
 
-    if ($receiptSend) {
+    if (!empty($formValues['send_receipt']) && $receiptSend) {
       $statusMsg .= ' ' . ts('A confirmation and receipt has been sent to %1.', array(1 => $this->_contributorEmail));
     }
     return $statusMsg;
