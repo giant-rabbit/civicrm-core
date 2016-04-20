@@ -259,12 +259,13 @@ abstract class CRM_Core_Payment {
     if (isset($params['processor_id'])) {
       $sql .= " WHERE pp.id = %2";
       $args[2] = array($params['processor_id'], 'Integer');
-      $notfound = "No active instances of payment processor ID#'{$params['processor_id']}'  were found.";
+      $notFound = ts("No active instances of payment processor %1 were found.", array(1 => $params['processor_id']));
     }
     else {
       $sql .= " WHERE ppt.name = %2";
       $args[2] = array($params['processor_name'], 'String');
       $notfound = "No active instances of the '{$params['processor_name']}' payment processor were found.";
+      $notFound = ts("No active instances of payment processor '%1' were found.", array(1 => $params['processor_name']));
     }
 
     $dao = CRM_Core_DAO::executeQuery($sql, $args);
@@ -319,10 +320,10 @@ abstract class CRM_Core_Payment {
       $extension_instance_found = TRUE;
     }
 
-    if (!$extension_instance_found) CRM_Core_Error::fatal(
-      "No extension instances of the '{$params['processor_name']}' payment processor were found.<br />" .
-      "$method method is unsupported in legacy payment processors."
-    );
+    if (!$extension_instance_found) {
+       $message = "No extension instances of the '%1' payment processor were found.<br />%2 method is unsupported in legacy payment processors.";
+       CRM_Core_Error::fatal(ts($message, array(1 => $params['processor_name'], 2 => $method)));
+      }
 
     // Exit here on web requests, allowing just the plain text response to be echoed
     if ($method == 'handlePaymentNotification') {

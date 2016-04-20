@@ -318,7 +318,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    */
   static function fatal($message = NULL, $code = NULL, $email = NULL) {
     $vars = array(
-      'message' => $message,
+      'message' => htmlspecialchars($message),
       'code' => $code,
     );
 
@@ -584,7 +584,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
 
     $file_log = self::createDebugLogger($comp);
     $file_log->log("$message\n");
-    $str = "<p/><code>$message</code>";
+    $str = '<p/><code>' . htmlspecialchars($message) . '</code>';
     if ($out && CRM_Core_Permission::check('view debug output')) {
       echo $str;
     }
