@@ -264,7 +264,6 @@ abstract class CRM_Core_Payment {
     else {
       $sql .= " WHERE ppt.name = %2";
       $args[2] = array($params['processor_name'], 'String');
-      $notfound = "No active instances of the '{$params['processor_name']}' payment processor were found.";
       $notFound = ts("No active instances of payment processor '%1' were found.", array(1 => $params['processor_name']));
     }
 
@@ -272,7 +271,7 @@ abstract class CRM_Core_Payment {
 
     // Check whether we found anything at all ..
     if (!$dao->N) {
-      CRM_Core_Error::fatal($notfound);
+      CRM_Core_Error::fatal($notFound);
     }
 
     $method = 'handle' . $method;
