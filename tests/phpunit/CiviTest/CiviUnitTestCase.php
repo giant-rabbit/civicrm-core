@@ -1886,7 +1886,7 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
    * Function to create custom group
    *
    * @param array $params
-   * @return array
+   * @return array|int
    * @internal param string $className
    * @internal param string $title name of custom group
    */
