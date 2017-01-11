@@ -303,6 +303,40 @@ DROP KEY `{$dao->CONSTRAINT_NAME}`";
   }
 
   /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_5_9_gr1($rev) {
+    $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'task_4_5_x_runSql', $rev);
+    $this->addTask('Set Remote Submissions setting', 'setRemoteSubmissionsSetting', $rev);
+  }
+
+  /**
+   * Set the setting value for allowing remote submissions.
+   *
+   * @param \CRM_Queue_TaskContext $ctx
+   *
+   * @return bool
+   */
+  public function setRemoteSubmissionsSetting(CRM_Queue_TaskContext $ctx) {
+    $domains = CRM_Core_DAO::executeQuery("SELECT id FROM civicrm_domain");
+    while ($domains->fetch()) {
+      CRM_Core_DAO::executeQuery("INSERT INTO civicrm_setting (`group_name`, `name`, `value`, `domain_id`, `is_domain`, `contact_id`, `component_id`, `created_date`, `created_id`)
+          VALUES (%1, %2, %3, %4, %5, NULL, NULL, %6, NULL)", array(
+            1 => array('CiviCRM Preferences', 'String'),
+            2 => array('remote_profile_submissions', 'String'),
+            3 => array('s:1:"1";', 'String'),
+            4 => array($domains->id, 'Integer'),
+            5 => array(1, 'Integer'),
+            6 => array(date('Y-m-d H:i:s'), 'String'),
+          )
+      );
+    }
+    return TRUE;
+  }
+
+  /**
    * (Queue Task Callback)
    */
   static function task_4_5_x_runSql(CRM_Queue_TaskContext $ctx, $rev) {
