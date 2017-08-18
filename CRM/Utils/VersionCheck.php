@@ -34,7 +34,7 @@
  */
 class CRM_Utils_VersionCheck {
   CONST
-    LATEST_VERSION_AT = 'http://latest.civicrm.org/stable.php',
+    LATEST_VERSION_AT = 'https://latest.civicrm.org/stable.php',
     // timeout for when the connection or the server is slow
     CHECK_TIMEOUT = 5,
     // relative to $civicrm_root
