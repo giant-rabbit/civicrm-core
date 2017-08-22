@@ -613,7 +613,7 @@ class CRM_Core_Resources {
     // Scripts needed by everyone, everywhere
     // FIXME: This is too long; list needs finer-grained segmentation
     $items = array(
-      "packages/jquery/jquery-1.11.1$min.js",
+      "packages/jquery/jquery-1.12.4$min.js",
       "packages/jquery/jquery-ui/jquery-ui$min.js",
       "packages/jquery/jquery-ui/jquery-ui$min.css",
 
