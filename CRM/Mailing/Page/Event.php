@@ -65,6 +65,8 @@ class CRM_Mailing_Page_Event extends CRM_Core_Page {
 
     $mailing_id = CRM_Utils_Request::retrieve('mid', 'Positive', $this);
 
+    CRM_Mailing_BAO_Mailing::checkPermission($mailing_id);
+
     //assign backurl
     $context = CRM_Utils_Request::retrieve('context', 'String', $this);
 
