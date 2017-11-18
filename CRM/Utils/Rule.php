@@ -808,5 +808,18 @@ class CRM_Utils_Rule {
   static function qfKey($key) {
     return ($key) ? CRM_Core_Key::valid($key) : FALSE;
   }
+
+  /**
+   * @param string $key Extension Key to check
+   * @return bool
+   */
+  public static function checkExtensionKeyIsValid($key = NULL) {
+
+    if (!empty($key) && !preg_match('/^[0-9a-zA-Z._-]+$/', $key)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
 }
 
