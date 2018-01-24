@@ -109,11 +109,6 @@ class CRM_Member_ActionMapping extends \Civi\ActionSchedule\Mapping {
     $query->where("e.status_id IN (#memberStatus)")
       ->param('memberStatus', \CRM_Member_PseudoConstant::membershipStatus(NULL, "(is_current_member = 1 OR name = 'Expired')", 'id'));
 
-    // Why is this only for civicrm_membership?
-    if ($schedule->start_action_date && $schedule->is_repeat == FALSE) {
-      $query['casUseReferenceDate'] = TRUE;
-    }
-
     return $query;
   }
 

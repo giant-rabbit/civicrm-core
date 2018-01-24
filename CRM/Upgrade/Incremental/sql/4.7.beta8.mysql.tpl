@@ -10,3 +10,5 @@ UPDATE civicrm_payment_processor pp, civicrm_payment_processor_type ppt SET pp.i
 -- CRM-17815
 {include file='../CRM/Upgrade/4.7.beta8.msg_template/civicrm_msg_template.tpl'}
 
+-- CRM-17880
+ALTER TABLE civicrm_action_log CHANGE COLUMN reference_date reference_date datetime;
