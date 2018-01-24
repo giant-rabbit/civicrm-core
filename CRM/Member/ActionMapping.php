@@ -146,11 +146,6 @@ class CRM_Member_ActionMapping extends \Civi\ActionSchedule\Mapping {
     $query->where("e.status_id IN (#memberStatus)")
       ->param('memberStatus', \CRM_Member_PseudoConstant::membershipStatus(NULL, "(is_current_member = 1 OR name = 'Expired')", 'id'));
 
-    // Why is this only for civicrm_membership?
-    if ($schedule->start_action_date && $schedule->is_repeat == FALSE) {
-      $query['casUseReferenceDate'] = TRUE;
-    }
-
     return $query;
   }
 
@@ -171,6 +166,16 @@ class CRM_Member_ActionMapping extends \Civi\ActionSchedule\Mapping {
       ->join(NULL, $joins)
       ->param('#editPerm', CRM_Contact_BAO_Relationship::EDIT)
       ->where('!( e.owner_membership_id IS NOT NULL AND rela.id IS NULL and relb.id IS NULL )');
+  }
+
+  /**
+   * Determine whether a schedule based on this mapping should
+   * reset the reminder state if the trigger date changes.
+   *
+   * @return bool
+   */
+  public function resetOnTriggerDateChange() {
+    return TRUE;
   }
 
 }

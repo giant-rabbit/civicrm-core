@@ -341,4 +341,14 @@ abstract class Mapping implements MappingInterface {
    */
   public abstract function createQuery($schedule, $phase, $defaultParams);
 
+  /**
+   * Determine whether a schedule based on this mapping should
+   * reset the reminder state if the trigger date changes.
+   *
+   * @return bool
+   */
+  public function resetOnTriggerDateChange() {
+    return FALSE;
+  }
+
 }
